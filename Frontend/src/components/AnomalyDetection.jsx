@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Upload, ArrowLeft, X, Check } from 'lucide-react';
+import { api } from '../services/api';
 
 const AnomalyDetection = () => {
   const location = useLocation();
@@ -32,17 +33,8 @@ const AnomalyDetection = () => {
         formData.append('image2', file, 'image2.jpg');
 
         // Send to backend
-        const response = await fetch('http://127.0.0.1:5000/upload', {
-          method: 'POST',
-          body: formData,
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.message || 'Failed to process images');
-        }
-
-        const data = await response.json();
+        console.log('[AnomalyDetection] POST /upload with 2 images');
+        const data = await api.upload(formData);
         console.log('API Response:', data);
         
         // Process similarity score

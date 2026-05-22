@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import login from '../assets/login.jpg';
+import { api } from '../services/api';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -38,29 +39,8 @@ const Login = () => {
 
       console.log('Sending login request with body:', requestBody); // Debug log
 
-      const response = await fetch('https://6c8bb5cf58fd.ngrok-free.app/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify(requestBody)
-      });
-
-      const data = await response.json();
+      const data = await api.login(requestBody);
       console.log('Login response data:', data); // Debug log
-
-      if (!response.ok) {
-        if (response.status === 400) {
-          throw new Error(data.message || 'Invalid email or password');
-        } else if (response.status === 401) {
-          throw new Error('Invalid credentials');
-        } else if (response.status === 404) {
-          throw new Error('User not found');
-        } else {
-          throw new Error(data.error || data.message || 'Login failed');
-        }
-      }
 
       // Handle successful login
       console.log('Login successful:', data);

@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { api } from '../services/api';
 
 const Search = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
@@ -33,25 +34,19 @@ const Search = ({ isOpen, onClose }) => {
 
       // Create FormData and append the file
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('image', file);
 
       // Send POST request
-      const apiResponse = await fetch('http://127.0.0.1:5000/recommend', {
-        method: 'POST',
-        body: formData
-      });
-
-      if (!apiResponse.ok) {
-        throw new Error('Failed to process image');
-      }
-
-      const data = await apiResponse.json();
+      console.log('[Search] POST /recommend payload ready');
+      const data = await api.recommend(formData);
       console.log('Image search response:', data);
 
       // Transform the response data into the format expected by SearchedProducts
-      const products = data.recommended_numbers.map((id, index) => ({
+      const ids = data.recommended_numbers || [];
+      const links = data.recommended_links || [];
+      const products = ids.map((id, index) => ({
         id: id,
-        link: data.recommended_links[index],
+        link: links[index],
         productDisplayName: `Similar Product ${index + 1}`,
         articleType: "Similar Item",
         baseColour: "N/A",
@@ -73,7 +68,7 @@ const Search = ({ isOpen, onClose }) => {
       onClose();
     } catch (error) {
       console.error('Image search error:', error);
-      setError('Failed to process image. Please try again.');
+      setError(error.message || 'Image search failed. Please check backend and try again.');
     } finally {
       setIsLoading(false);
     }
@@ -84,24 +79,12 @@ const Search = ({ isOpen, onClose }) => {
     if (searchQuery.trim()) {
       setIsLoading(true);
       try {
-        // Send POST request to get data
-        const response = await fetch('http://127.0.0.1:5000/get_data', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify({
-            articleType: searchQuery.trim().toLowerCase()
-          })
-        });
-
-        const data = await response.json();
+        const payload = {
+          articleType: searchQuery.trim().toLowerCase()
+        };
+        console.log('[Search] POST /get_data', payload);
+        const data = await api.getData(payload);
         console.log('Search response data:', data); // Debug log
-
-        if (!response.ok) {
-          throw new Error(data.error || data.message || 'Search failed');
-        }
 
         // Navigate to search results with the response data
         navigate('/search-results', { 
@@ -113,7 +96,7 @@ const Search = ({ isOpen, onClose }) => {
         onClose();
       } catch (error) {
         console.error('Search error:', error);
-        setError('Failed to search. Please try again.');
+        setError(error.message || 'Search failed. Please try again.');
       } finally {
         setIsLoading(false);
       }

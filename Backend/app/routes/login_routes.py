@@ -19,17 +19,18 @@ def login():
     Handle user login.
     """
     try:
-        data = request.json
-        username = data.get('username')
+        data = request.get_json(silent=True) or {}
+        username = data.get('username') or data.get('id')
         password = data.get('password')
-        user_type = data.get('user_type', 'customer')  # 'customer' or 'seller'
+        user_type = (data.get('user_type') or data.get('role') or 'customer').lower()  # 'customer' or 'seller'
+        print(f"[POST /login] username={username}, user_type={user_type}")
         
         if not username or not password:
             return jsonify({'error': 'Username and password are required'}), 400
         
         # Check database connection
         mongo = get_mongo()
-        if not mongo or not mongo.db:
+        if mongo is None or mongo.db is None:
             return jsonify({'error': 'Database connection not available'}), 500
         
         # Check user in appropriate collection
@@ -43,13 +44,16 @@ def login():
             return jsonify({
                 'message': 'Login successful',
                 'username': username,
+                'id': username,
                 'user_type': user_type,
+                'role': user_type,
                 'user_id': str(user['_id'])
             })
         else:
             return jsonify({'error': 'Invalid credentials'}), 401
             
     except Exception as e:
+        print(f'[POST /login] Error: {e}')
         return jsonify({'error': str(e)}), 500
 
 @bp.route('/register', methods=['POST'])
@@ -58,18 +62,19 @@ def register():
     Handle user registration.
     """
     try:
-        data = request.json
-        username = data.get('username')
+        data = request.get_json(silent=True) or {}
+        username = data.get('username') or data.get('id') or data.get('email')
         password = data.get('password')
-        email = data.get('email')
-        user_type = data.get('user_type', 'customer')  # 'customer' or 'seller'
+        email = data.get('email') or data.get('id')
+        user_type = (data.get('user_type') or data.get('role') or 'customer').lower()  # 'customer' or 'seller'
+        print(f"[POST /register] username={username}, user_type={user_type}")
         
         if not username or not password or not email:
             return jsonify({'error': 'Username, password, and email are required'}), 400
         
         # Check database connection
         mongo = get_mongo()
-        if not mongo or not mongo.db:
+        if mongo is None or mongo.db is None:
             return jsonify({'error': 'Database connection not available'}), 500
         
         # Check if user already exists
@@ -84,6 +89,9 @@ def register():
             'id': username,
             'password': password,  # In production, use proper password hashing
             'email': email,
+            'firstName': data.get('firstName', ''),
+            'lastName': data.get('lastName', ''),
+            'dateOfBirth': data.get('dateOfBirth', ''),
             'created_at': mongo.db.command('serverStatus')['localTime']
         }
         
@@ -92,9 +100,12 @@ def register():
         return jsonify({
             'message': 'Registration successful',
             'username': username,
+            'id': username,
             'user_type': user_type,
+            'role': user_type,
             'user_id': str(result.inserted_id)
         })
         
     except Exception as e:
+        print(f'[POST /register] Error: {e}')
         return jsonify({'error': str(e)}), 500

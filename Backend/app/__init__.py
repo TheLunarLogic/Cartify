@@ -5,13 +5,17 @@ Main application package.
 from flask import Flask
 from flask_cors import CORS
 from app.utils.db import init_db
-from app.config.settings import Config
+from app.config.settings import Config, ALLOWED_ORIGINS
 
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
     
-    CORS(app)
+    CORS(
+        app,
+        resources={r"/*": {"origins": ALLOWED_ORIGINS + ['http://localhost:5173']}},
+        supports_credentials=True
+    )
     init_db(app)
     
     # Import routes

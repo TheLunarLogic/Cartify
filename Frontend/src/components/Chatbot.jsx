@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { X, Send, ShoppingBag, ShoppingCart, Package, Gift } from 'lucide-react';
+import { api } from '../services/api';
 
 const Chatbot = ({ isOpen, onClose }) => {
   const [messages, setMessages] = useState([
@@ -34,23 +35,12 @@ const Chatbot = ({ isOpen, onClose }) => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://127.0.0.1:5000/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: userMessage.content ,
-          username: "n@12.com"
-
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to get response');
-      }
-
-      const data = await response.json();
+      const payload = {
+        message: userMessage.content,
+        username: "n@12.com"
+      };
+      console.log('[Chatbot] POST /chat', payload);
+      const data = await api.chat(payload);
       
       setMessages(prev => [...prev, {
         role: 'assistant',
