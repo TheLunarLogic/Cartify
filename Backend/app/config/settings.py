@@ -19,7 +19,7 @@ if not GOOGLE_API_KEY:
     GOOGLE_API_KEY = None
 
 # Get allowed origins for CORS
-ALLOWED_ORIGINS = os.getenv('ALLOWED_ORIGINS', 'http://localhost:3000').split(',')
+ALLOWED_ORIGINS = os.getenv('ALLOWED_ORIGINS', '*').split(',')
 
 # Data directory
 DATA_DIR = os.path.join(BASE_DIR, 'data')

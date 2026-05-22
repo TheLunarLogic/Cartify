@@ -33,7 +33,7 @@ def chat_endpoint():
         
         # Check database connection
         mongo = get_mongo()
-        if not mongo or not mongo.db:
+        if mongo is None or mongo.db is None:
             return jsonify({'error': 'Database connection not available'}), 500
         
         # Check if user exists and determine role
@@ -86,7 +86,7 @@ def delete_chat_history():
         
         # Check database connection
         mongo = get_mongo()
-        if not mongo or not mongo.db:
+        if mongo is None or mongo.db is None:
             return jsonify({'error': 'Database connection not available'}), 500
         
         # Check if user exists and determine role

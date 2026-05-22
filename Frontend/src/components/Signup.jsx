@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import signup from '../assets/signup.jpg';
+import { api } from '../services/api';
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -41,27 +42,14 @@ const Signup = () => {
     }
 
     try {
-      const response = await fetch('https://6c8bb5cf58fd.ngrok-free.app/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          id: formData.id,
-          password: formData.password,
-          dateOfBirth: formData.dateOfBirth,
-          role: formData.role,
-        })
+      await api.register({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        id: formData.id,
+        password: formData.password,
+        dateOfBirth: formData.dateOfBirth,
+        role: formData.role,
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || data.message || 'Registration failed');
-      }
 
       // Navigate based on role from form data
       if (formData.role === 'customer') {
